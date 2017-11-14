@@ -79,3 +79,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+.idea/
+.vs/
+*.exe
+Echne_Data/
