@@ -37,8 +37,7 @@ public class FormHandler : MonoBehaviour
 
 	public void onPosXUp()
 	{
-		float d;
-		float.TryParse(GameObject.FindGameObjectWithTag("xPos").GetComponent<InputField>().text, out d);
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].posX;
 		float old = d;
 		if (d % 1f == 0) d++;
 		else d += 0.1f;
@@ -50,8 +49,7 @@ public class FormHandler : MonoBehaviour
 	
 	public void onPosXDown()
 	{
-		float d;
-		float.TryParse(GameObject.FindGameObjectWithTag("xPos").GetComponent<InputField>().text, out d);
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].posX;
 		float old = d;
 		if (d % 1f == 0) d--;
 		else d -= 0.1f;
@@ -74,20 +72,19 @@ public class FormHandler : MonoBehaviour
 	
 	public void onPosYUp()
 	{
-		float d;
-		float.TryParse(GameObject.FindGameObjectWithTag("yPos").GetComponent<InputField>().text, out d);
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].posY;
 		float old = d;
 		if (d % 1f == 0) d++;
 		else d += 0.1f;
 		CubeHandler.cubes[CubeHandler.selectedCube].rotatePointY += d - old;
+		CubeHandler.cubes[CubeHandler.selectedCube].posY = d;
 		GameObject.FindGameObjectWithTag("yPos").GetComponent<InputField>().text = d + "";
 		CubeHandler.updateCube(CubeHandler.selectedCube);
 	}
 	
 	public void onPosYDown()
 	{
-		float d;
-		float.TryParse(GameObject.FindGameObjectWithTag("yPos").GetComponent<InputField>().text, out d);
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].posY;
 		float old = d;
 		if (d % 1f == 0) d--;
 		else d -= 0.1f;
@@ -110,8 +107,7 @@ public class FormHandler : MonoBehaviour
 	
 	public void onPosZUp()
 	{
-		float d;
-		float.TryParse(GameObject.FindGameObjectWithTag("zPos").GetComponent<InputField>().text, out d);
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].posZ;
 		float old = d;
 		if (d % 1f == 0) d++;
 		else d += 0.1f;
@@ -123,8 +119,7 @@ public class FormHandler : MonoBehaviour
 	
 	public void onPosZDown()
 	{
-		float d;
-		float.TryParse(GameObject.FindGameObjectWithTag("zPos").GetComponent<InputField>().text, out d);
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].posZ;
 		float old = d;
 		if (d % 1f == 0) d--;
 		else d -= 0.1f;
@@ -154,10 +149,9 @@ public class FormHandler : MonoBehaviour
 	
 	public void onDimensionXUp()
 	{
-		float d;
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].dimensionX;
 		bool change = CubeHandler.cubes[CubeHandler.selectedCube].dimensionX / 2 ==
 		    CubeHandler.cubes[CubeHandler.selectedCube].rotatePointX  - CubeHandler.cubes[CubeHandler.selectedCube].posX;
-		float.TryParse(GameObject.FindGameObjectWithTag("xDimension").GetComponent<InputField>().text, out d);
 		if (d % 1f == 0) d++;
 		else d += 0.1f;
 		if (change)
@@ -173,10 +167,9 @@ public class FormHandler : MonoBehaviour
 	
 	public void onDimensionXDown()
 	{
-		float d;
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].dimensionX;
 		bool change = CubeHandler.cubes[CubeHandler.selectedCube].dimensionX / 2 ==
 		              CubeHandler.cubes[CubeHandler.selectedCube].rotatePointX - CubeHandler.cubes[CubeHandler.selectedCube].posX;
-		float.TryParse(GameObject.FindGameObjectWithTag("xDimension").GetComponent<InputField>().text, out d);
 		if (d % 1f == 0) d--;
 		else d -= 0.1f;
 		if (change)
@@ -210,10 +203,9 @@ public class FormHandler : MonoBehaviour
 	
 	public void onDimensionYUp()
 	{
-		float d;
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].dimensionY;
 		bool change = CubeHandler.cubes[CubeHandler.selectedCube].dimensionY / 2 ==
 		              CubeHandler.cubes[CubeHandler.selectedCube].rotatePointY - CubeHandler.cubes[CubeHandler.selectedCube].posY;
-		float.TryParse(GameObject.FindGameObjectWithTag("yDimension").GetComponent<InputField>().text, out d);
 		if (d % 1f == 0) d++;
 		else d += 0.1f;
 		if (change)
@@ -229,10 +221,9 @@ public class FormHandler : MonoBehaviour
 	
 	public void onDimensionYDown()
 	{
-		float d;
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].dimensionY;
 		bool change = CubeHandler.cubes[CubeHandler.selectedCube].dimensionY / 2 ==
 		              CubeHandler.cubes[CubeHandler.selectedCube].rotatePointY - CubeHandler.cubes[CubeHandler.selectedCube].posY;
-		float.TryParse(GameObject.FindGameObjectWithTag("yDimension").GetComponent<InputField>().text, out d);
 		if (d % 1f == 0) d--;
 		else d -= 0.1f;
 		if (change)
@@ -266,10 +257,9 @@ public class FormHandler : MonoBehaviour
 	
 	public void onDimensionZUp()
 	{
-		float d;
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].dimensionZ;
 		bool change = CubeHandler.cubes[CubeHandler.selectedCube].dimensionZ / 2 ==
 		              CubeHandler.cubes[CubeHandler.selectedCube].rotatePointZ - CubeHandler.cubes[CubeHandler.selectedCube].posZ;
-		float.TryParse(GameObject.FindGameObjectWithTag("zDimension").GetComponent<InputField>().text, out d);
 		if (d % 1f == 0) d++;
 		else d += 0.1f;
 		if (change)
@@ -285,10 +275,9 @@ public class FormHandler : MonoBehaviour
 	
 	public void onDimensionZDown()
 	{
-		float d;
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].dimensionZ;
 		bool change = CubeHandler.cubes[CubeHandler.selectedCube].dimensionZ / 2 ==
 		              CubeHandler.cubes[CubeHandler.selectedCube].rotatePointZ - CubeHandler.cubes[CubeHandler.selectedCube].posZ;
-		float.TryParse(GameObject.FindGameObjectWithTag("zDimension").GetComponent<InputField>().text, out d);
 		if (d % 1f == 0) d--;
 		else d -= 0.1f;
 		if (change)
@@ -315,8 +304,7 @@ public class FormHandler : MonoBehaviour
 	
 	public void onRotationXUp()
 	{
-		float d;
-		float.TryParse(GameObject.FindGameObjectWithTag("xRotation").GetComponent<InputField>().text, out d);
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].rotationX;
 		if (d % 1f == 0) d++;
 		else d += 0.1f;
 		CubeHandler.cubes[CubeHandler.selectedCube].rotationX = d;
@@ -327,8 +315,7 @@ public class FormHandler : MonoBehaviour
 	
 	public void onRotationXDown()
 	{
-		float d;
-		float.TryParse(GameObject.FindGameObjectWithTag("xRotation").GetComponent<InputField>().text, out d);
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].rotationX;
 		if (d % 1f == 0) d--;
 		else d -= 0.1f;
 		CubeHandler.cubes[CubeHandler.selectedCube].rotationX = d;
@@ -350,8 +337,7 @@ public class FormHandler : MonoBehaviour
 	
 	public void onRotationYUp()
 	{
-		float d;
-		float.TryParse(GameObject.FindGameObjectWithTag("yRotation").GetComponent<InputField>().text, out d);
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].rotationY;
 		if (d % 1f == 0) d++;
 		else d += 0.1f;
 		CubeHandler.cubes[CubeHandler.selectedCube].rotationY = d;
@@ -362,8 +348,7 @@ public class FormHandler : MonoBehaviour
 	
 	public void onRotationYDown()
 	{
-		float d;
-		float.TryParse(GameObject.FindGameObjectWithTag("yRotation").GetComponent<InputField>().text, out d);
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].rotationY;
 		if (d % 1f == 0) d--;
 		else d -= 0.1f;
 		CubeHandler.cubes[CubeHandler.selectedCube].rotationY = d;
@@ -385,8 +370,7 @@ public class FormHandler : MonoBehaviour
 	
 	public void onRotationZUp()
 	{
-		float d;
-		float.TryParse(GameObject.FindGameObjectWithTag("zRotation").GetComponent<InputField>().text, out d);
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].rotationZ;
 		if (d % 1f == 0) d++;
 		else d += 0.1f;
 		CubeHandler.cubes[CubeHandler.selectedCube].rotationZ = d;
@@ -397,8 +381,7 @@ public class FormHandler : MonoBehaviour
 	
 	public void onRotationZDown()
 	{
-		float d;
-		float.TryParse(GameObject.FindGameObjectWithTag("zRotation").GetComponent<InputField>().text, out d);
+		float d = CubeHandler.cubes[CubeHandler.selectedCube].rotationZ;
 		if (d % 1f == 0) d--;
 		else d -= 0.1f;
 		CubeHandler.cubes[CubeHandler.selectedCube].rotationZ = d;
@@ -412,6 +395,7 @@ public class FormHandler : MonoBehaviour
 		if (notSelecting)
 		{
 			CubeHandler.cubes[CubeHandler.selectedCube].rotationX = rotation * 360 - 180;
+			GameObject.FindGameObjectWithTag("xRotation").GetComponent<InputField>().text = CubeHandler.cubes[CubeHandler.selectedCube].rotationX + "";
 			CubeHandler.updateCube(CubeHandler.selectedCube);
 		}
 	}
@@ -421,6 +405,7 @@ public class FormHandler : MonoBehaviour
 		if (notSelecting)
 		{
 			CubeHandler.cubes[CubeHandler.selectedCube].rotationY = rotation * 360 - 180;
+			GameObject.FindGameObjectWithTag("yRotation").GetComponent<InputField>().text = CubeHandler.cubes[CubeHandler.selectedCube].rotationY + "";
 			CubeHandler.updateCube(CubeHandler.selectedCube);
 		}
 	}
@@ -430,6 +415,7 @@ public class FormHandler : MonoBehaviour
 		if (notSelecting)
 		{
 			CubeHandler.cubes[CubeHandler.selectedCube].rotationZ = rotation * 360 - 180;
+			GameObject.FindGameObjectWithTag("zRotation").GetComponent<InputField>().text = CubeHandler.cubes[CubeHandler.selectedCube].rotationZ + "";
 			CubeHandler.updateCube(CubeHandler.selectedCube);
 		}
 	}

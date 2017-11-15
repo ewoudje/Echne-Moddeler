@@ -84,3 +84,6 @@ $RECYCLE.BIN/
 .vs/
 *.exe
 Echne_Data/
+packages/
+packages.config
+saves/

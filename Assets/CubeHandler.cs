@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Runtime.CompilerServices;
 using System.Text;
+using LightJson;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,10 +11,10 @@ public class CubeHandler : MonoBehaviour
 {
     public static int selectedCube = 0;
     public static List<Cube> cubes = new List<Cube>();
-    public static List<GameObject> renderCubes = new List<GameObject>();
-    public static Exporter saver = new EchneExporter();
-    public static Importer loader = new EchneImporter();
-    public static Project project = new Project();
+    private static List<GameObject> renderCubes = new List<GameObject>();
+    public Exporter saver = new EchneExporter();
+    public Importer loader = new EchneImporter();
+    public Project project = new Project();
 
     private void Awake()
     {
@@ -86,35 +86,49 @@ public class CubeHandler : MonoBehaviour
     public static void updateCube(int cubeId)
     {
         Cube cube = cubes[cubeId];
-        if (cubeId >= renderCubes.Count)
+        if (renderCubes.Count != cubes.Count)
         {
-            GameObject rotation = new GameObject();
-            rotation.transform.localPosition = new Vector3((cube.posX - 8 + cube.dimensionX / 2) / 8, (cube.posY + cube.dimensionY / 2) / 8, (cube.posZ - 8 + cube.dimensionZ / 2) / 8);
-            rotation.name = "Cube" + renderCubes.Count;
-            GameObject cubie = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cubie.transform.parent = rotation.transform;
-            cubie.AddComponent<RenderCube>();
-            cubie.GetComponent<RenderCube>().id = renderCubes.Count;
-            rotation.AddComponent<RotatePoint>();
-            renderCubes.Add(cubie);
+            if (renderCubes.Count <= cubes.Count)
+            {
+                for (int i = 0; i < cubes.Count - renderCubes.Count; i++)
+                {
+                    GameObject rotation = new GameObject();
+                    rotation.transform.localPosition = new Vector3((cube.posX - 8 + cube.dimensionX / 2) / 8,
+                        (cube.posY + cube.dimensionY / 2) / 8, (cube.posZ - 8 + cube.dimensionZ / 2) / 8);
+                    rotation.name = "Cube" + renderCubes.Count;
+                    GameObject cubie = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    cubie.transform.parent = rotation.transform;
+                    cubie.AddComponent<RenderCube>();
+                    cubie.GetComponent<RenderCube>().id = renderCubes.Count;
+                    rotation.AddComponent<RotatePoint>();
+                    renderCubes.Add(cubie);
+                }
+            }
+            else
+            {
+                renderCubes.RemoveRange(cubes.Count, cubes.Count - renderCubes.Count);
+            }
         }
         GameObject renderCube = renderCubes[cubeId];
-        renderCube.transform.localPosition = new Vector3((cube.posX - 8 + cube.dimensionX / 2) / 8, (cube.posY + cube.dimensionY / 2) / 8, (cube.posZ - 8 + cube.dimensionZ / 2) / 8) - renderCube.transform.parent.transform.localPosition;
-        renderCube.transform.localScale = new Vector3(cube.dimensionX / 8, cube.dimensionY / 8, cube.dimensionZ / 8);
         renderCube.transform.parent.transform.localPosition = new Vector3(cube.rotatePointX / 8 - 1, cube.rotatePointY / 8, cube.rotatePointZ / 8 - 1);
         renderCube.transform.parent.transform.localEulerAngles = new Vector3(cube.rotationX, cube.rotationY, cube.rotationZ);
+        renderCube.transform.localPosition = new Vector3((cube.posX - 8 + cube.dimensionX / 2) / 8, (cube.posY + cube.dimensionY / 2) / 8, (cube.posZ - 8 + cube.dimensionZ / 2) / 8) - renderCube.transform.parent.transform.localPosition;
+        renderCube.transform.localScale = new Vector3(cube.dimensionX / 8, cube.dimensionY / 8, cube.dimensionZ / 8);
     }
 
-    public static void Save()
+    public void Save()
     {
-        saver.WriteToFile(Application.absoluteURL + "/saves/" + project.name + saver.getExportExtension());
+        saver.WriteToFile("saves/" + project.name + saver.getExportExtension());
     }
     
-    public static void Load()
+    public void Load()
     {
-        loader.ReadFromFile(Application.absoluteURL + "/saves/" + project.name + saver.getExportExtension());
+        loader.ReadFromFile("saves/" + project.name + saver.getExportExtension());
         for (int i = 0; i < cubes.Count; i++)
+        {
             updateCube(i);
+            SelectCube(i);
+        }
     }
 }
 
@@ -341,11 +355,31 @@ public class EchneExporter : Exporter
 
     public void WriteToFile(string filePath)
     {
-        StringBuilder builder = new StringBuilder();
-        builder.Append(JsonUtility.ToJson(CubeHandler.cubes));
-        //builder.Append("\\");
+        var json = new JsonObject();
+        var array = new JsonArray();
+        foreach (Cube cube in CubeHandler.cubes)
+        {
+            JsonObject jsonCube = new JsonObject();
+            jsonCube.Add("name", cube.name);
+            jsonCube.Add("xPos", cube.posX);
+            jsonCube.Add("yPos", cube.posY);
+            jsonCube.Add("zPos", cube.posZ);
+            jsonCube.Add("xDimension", cube.dimensionX);
+            jsonCube.Add("yDimension", cube.dimensionY);
+            jsonCube.Add("zDimension", cube.dimensionZ);
+            jsonCube.Add("xRotation", cube.rotationX);
+            jsonCube.Add("yRotation", cube.rotationY);
+            jsonCube.Add("zRotation", cube.rotationZ);
+            jsonCube.Add("xRotationPoint", cube.rotatePointX);
+            jsonCube.Add("yRotationPoint", cube.rotatePointY);
+            jsonCube.Add("zRotationPoint", cube.rotatePointZ);
+            array.Add(jsonCube);
+        }
+        json.Add("cubes", array);
         GZipStream stream = new GZipStream(new FileStream(filePath, FileMode.OpenOrCreate), CompressionMode.Compress);
-        byte[] buffer = Encoding.UTF8.GetBytes(builder.ToString());
+        byte[] buffer = Encoding.UTF8.GetBytes(json.ToString());
+        byte[] length = BitConverter.GetBytes((long) buffer.Length);
+        stream.Write(length, 0, 8);
         stream.Write(buffer, 0, buffer.Length);
         stream.Close();
     }
@@ -355,11 +389,40 @@ public class EchneImporter : Importer
 {
     public void ReadFromFile(string filePath)
     {
-        GZipStream stream = new GZipStream(new FileStream(filePath, FileMode.OpenOrCreate), CompressionMode.Compress);
-        byte[] buffer = new byte[stream.Length];
-        stream.Read(buffer, 0, (int) stream.Length);
+        GZipStream stream = new GZipStream(new FileStream(filePath, FileMode.Open), CompressionMode.Decompress);
+
+        byte[] lengthBuffer = new byte[8];
+        stream.Read(lengthBuffer, 0, 8);
+        long length = BitConverter.ToInt64(lengthBuffer, 0);
+        byte[] buffer = new byte[length];
+        for (int i = 0; i < length; i++)
+        {
+            buffer[i] = (byte) stream.ReadByte();
+        }
         stream.Close();
-        string[] json = Encoding.UTF8.GetString(buffer).Split('\\');
-        CubeHandler.cubes = JsonUtility.FromJson<List<Cube>>(json[0]);
+        string output = Encoding.UTF8.GetString(buffer);
+        Console.WriteLine(output);
+        JsonObject json = JsonValue.Parse(output);
+        var cubes = json["cubes"].AsJsonArray;
+        List<Cube> result = new List<Cube>();
+        foreach (JsonObject jsonCube in cubes)
+        {
+            Cube cube = new Cube();
+            cube.name = jsonCube["name"].AsString;
+            cube.posX = (float) jsonCube["xPos"].AsNumber;
+            cube.posY = (float) jsonCube["yPos"].AsNumber;
+            cube.posZ = (float) jsonCube["zPos"].AsNumber;
+            cube.dimensionX = (float) jsonCube["xDimension"].AsNumber;
+            cube.dimensionY = (float) jsonCube["yDimension"].AsNumber;
+            cube.dimensionZ = (float) jsonCube["zDimension"].AsNumber;
+            cube.rotationX = (float) jsonCube["xRotation"].AsNumber;
+            cube.rotationY = (float) jsonCube["yRotation"].AsNumber;
+            cube.rotationZ = (float) jsonCube["zRotation"].AsNumber;
+            cube.rotatePointX = (float) jsonCube["xRotationPoint"].AsNumber;
+            cube.rotatePointY = (float) jsonCube["yRotationPoint"].AsNumber;
+            cube.rotatePointZ = (float) jsonCube["zRotationPoint"].AsNumber;
+            result.Add(cube);
+        }
+        CubeHandler.cubes = result;
     }
 }
