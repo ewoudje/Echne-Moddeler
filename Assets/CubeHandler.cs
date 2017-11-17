@@ -10,11 +10,13 @@ using UnityEngine.UI;
 public class CubeHandler : MonoBehaviour
 {
     public static int selectedCube = 0;
-    public static List<Cube> cubes = new List<Cube>();
+    public static List<Cube> cubes {
+        get { return project.cubes; }
+    }
     private static List<GameObject> renderCubes = new List<GameObject>();
     public Exporter saver = new EchneExporter();
     public Importer loader = new EchneImporter();
-    public Project project = new Project();
+    public static Project project = new Project();
 
     private void Awake()
     {
@@ -43,17 +45,25 @@ public class CubeHandler : MonoBehaviour
         cube.rotatePointY = 0.5f;
         cube.rotatePointZ = 0.5f;
         cubes.Add(cube);
-        GameObject rotation = new GameObject();
-        rotation.transform.localPosition = new Vector3((cube.posX - 8 + cube.dimensionX / 2) / 8, (cube.posY + cube.dimensionY / 2) / 8, (cube.posZ - 8 + cube.dimensionZ / 2) / 8);
-        rotation.name = "Cube" + renderCubes.Count;
-        GameObject renderCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        renderCube.transform.parent = rotation.transform;
-        renderCube.AddComponent<RenderCube>();
-        renderCube.GetComponent<RenderCube>().id = renderCubes.Count;
-        rotation.AddComponent<RotatePoint>();
-        renderCubes.Add(renderCube);
-        updateCube(renderCubes.Count - 1);
+        updateCube(cubes.Count - 1);
+        return cubes.Count - 1;
+    }
+    
+    public static int CloneACube(int cubeID)
+    {
+        Cube rCube = cubes[cubeID];
+        Cube cube = rCube.Clone();
+        cube.name = cube.name + " Copy";
+        cubes.Add(cube);
+        updateCube(renderCubes.Count);
+        SelectCube(renderCubes.Count - 1);
         return renderCubes.Count - 1;
+    }
+    
+    public static void DeleteACube(int cubeID)
+    {
+        cubes.RemoveAt(cubeID);
+        updateCube(cubeID);
     }
 
     public static void SelectCube(int id)
@@ -62,7 +72,8 @@ public class CubeHandler : MonoBehaviour
         CubesList.texts[selectedCube].GetComponentInChildren<Text>().color = Color.white;
         selectedCube = id;
         renderCubes[id].GetComponent<RenderCube>().selected = true;
-        CubesList.texts[id].GetComponentInChildren<Text>().color = Color.blue;
+        if (id < CubesList.texts.Count)
+            CubesList.texts[id].GetComponentInChildren<Text>().color = Color.blue;
         FormHandler.notSelecting = false;
         GameObject.FindGameObjectWithTag("xPos").GetComponent<InputField>().text = cubes[id].posX + "";
         GameObject.FindGameObjectWithTag("yPos").GetComponent<InputField>().text = cubes[id].posY + "";
@@ -85,11 +96,12 @@ public class CubeHandler : MonoBehaviour
 
     public static void updateCube(int cubeId)
     {
-        Cube cube = cubes[cubeId];
+        Cube cube;
         if (renderCubes.Count != cubes.Count)
         {
-            if (renderCubes.Count <= cubes.Count)
+            if (renderCubes.Count < cubes.Count)
             {
+                cube = cubes[cubeId];
                 for (int i = 0; i < cubes.Count - renderCubes.Count; i++)
                 {
                     GameObject rotation = new GameObject();
@@ -106,9 +118,20 @@ public class CubeHandler : MonoBehaviour
             }
             else
             {
-                renderCubes.RemoveRange(cubes.Count, cubes.Count - renderCubes.Count);
+                for (int i = cubes.Count; i < renderCubes.Count; i++)
+                {
+                    if (selectedCube == i && cubes.Count != 0) SelectCube(cubes.Count - 1);
+                    Destroy(renderCubes[i].transform.parent.gameObject);
+                    renderCubes.RemoveAt(i);
+                    foreach (GameObject gameObject in renderCubes)
+                    {
+                        gameObject.GetComponent<RenderCube>().id--;
+                    }
+                }
+                if (cubeId >= renderCubes.Count) return;
             }
         }
+        cube = cubes[cubeId];
         GameObject renderCube = renderCubes[cubeId];
         renderCube.transform.parent.transform.localPosition = new Vector3(cube.rotatePointX / 8 - 1, cube.rotatePointY / 8, cube.rotatePointZ / 8 - 1);
         renderCube.transform.parent.transform.localEulerAngles = new Vector3(cube.rotationX, cube.rotationY, cube.rotationZ);
@@ -118,23 +141,29 @@ public class CubeHandler : MonoBehaviour
 
     public void Save()
     {
-        saver.WriteToFile("saves/" + project.name + saver.getExportExtension());
+        saver.WriteToFile("saves/" + project.name + saver.getExportExtension(), project);
     }
     
     public void Load()
     {
-        loader.ReadFromFile("saves/" + project.name + saver.getExportExtension());
+        loader.ReadFromFile("saves/" + project.name + saver.getExportExtension(), project);
         for (int i = 0; i < cubes.Count; i++)
         {
             updateCube(i);
             SelectCube(i);
         }
     }
+
+    public void changeProjectName(string name)
+    {
+        project.name = name;
+    }
 }
 
 public class Project
 {
     public string name;
+    public List<Cube> cubes = new List<Cube>();
 }
 
 public class RenderCube : MonoBehaviour
@@ -333,17 +362,36 @@ public class Cube
     public float dimensionX, dimensionY, dimensionZ;
     public float rotationX, rotationY, rotationZ;
     public float rotatePointX, rotatePointY, rotatePointZ;
+
+    public Cube Clone()
+    {
+        Cube cube = new Cube();
+        cube.name = name;
+        cube.posX = posX;
+        cube.posY = posY;
+        cube.posZ = posZ;
+        cube.dimensionX = dimensionX;
+        cube.dimensionY = dimensionY;
+        cube.dimensionZ = dimensionZ;
+        cube.rotationX = rotationX;
+        cube.rotationY = rotationY;
+        cube.rotationZ = rotationZ;
+        cube.rotatePointX = rotatePointX;
+        cube.rotatePointY = rotatePointY;
+        cube.rotatePointZ = rotatePointZ;
+        return cube;
+    }
 }
 
 public interface Exporter
 {
     string getExportExtension();
-    void WriteToFile(String filePath);
+    void WriteToFile(String filePath, Project project);
 }
 
 public interface Importer
 {
-    void ReadFromFile(String filePath);
+    void ReadFromFile(String filePath, Project project);
 }
 
 public class EchneExporter : Exporter
@@ -353,11 +401,11 @@ public class EchneExporter : Exporter
         return ".ecn";
     }
 
-    public void WriteToFile(string filePath)
+    public void WriteToFile(string filePath, Project project)
     {
         var json = new JsonObject();
         var array = new JsonArray();
-        foreach (Cube cube in CubeHandler.cubes)
+        foreach (Cube cube in project.cubes)
         {
             JsonObject jsonCube = new JsonObject();
             jsonCube.Add("name", cube.name);
@@ -387,7 +435,7 @@ public class EchneExporter : Exporter
 
 public class EchneImporter : Importer
 {
-    public void ReadFromFile(string filePath)
+    public void ReadFromFile(string filePath, Project project)
     {
         GZipStream stream = new GZipStream(new FileStream(filePath, FileMode.Open), CompressionMode.Decompress);
 
@@ -423,6 +471,6 @@ public class EchneImporter : Importer
             cube.rotatePointZ = (float) jsonCube["zRotationPoint"].AsNumber;
             result.Add(cube);
         }
-        CubeHandler.cubes = result;
+        project.cubes = result;
     }
 }

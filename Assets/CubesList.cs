@@ -10,7 +10,22 @@ public class CubesList : MonoBehaviour
 	public Font font;
 	
 	public static List<GameObject> texts = new List<GameObject>();
+
+
+	public void onClone()
+	{
+		CubeHandler.CloneACube(CubeHandler.selectedCube);
+	}
 	
+	public void onDelete()
+	{
+		CubeHandler.DeleteACube(CubeHandler.selectedCube);
+	}
+	
+	public void onNew()
+	{
+		CubeHandler.CreateACube();
+	}
 	// Update is called once per frame
 	void Update ()
 	{
@@ -26,18 +41,15 @@ public class CubesList : MonoBehaviour
 		{
 			if (texts.Count > list.Count)
 			{
-				for (int i = 0; i < list.Count; i++)
+				for (int i = list.Count; i < texts.Count; i++)
 				{
-					if (!texts[i].GetComponent<Text>().text.Equals(list[i].name))
-					{
-						Destroy(texts[i]);
-						texts.RemoveAt(i);
-					}
+					Destroy(texts[i]);
+					texts.RemoveAt(i);
 				}
 			}
 			else
 			{
-				texts.Add(CreateText(5, -5 + texts.Count * -15, list[texts.Count].name, 10, Color.white, texts.Count));
+				texts.Add(CreateText(5, -25 + texts.Count * -20, list[texts.Count].name, 15, Color.white, texts.Count));
 			}
 		}
 	}
@@ -58,7 +70,7 @@ public class CubesList : MonoBehaviour
 		trans.anchorMin = new Vector2(0, 1);
 		trans.anchorMax = new Vector2(0, 1);
 		trans.offsetMin = new Vector2(x, y);
-		trans.offsetMax = new Vector2(x + 100, y - 15);
+		trans.offsetMax = new Vector2(x + 100, y - 20);
 
 		Button button = UIbuttonGO.AddComponent<Button>();
 		button.onClick.AddListener(() =>
@@ -68,7 +80,7 @@ public class CubesList : MonoBehaviour
 		
 		Text text = UItextGO.AddComponent<Text>();
 		RectTransform trans2 = UItextGO.GetComponent<RectTransform>();
-		trans2.sizeDelta = new Vector2(100, 15);
+		trans2.sizeDelta = new Vector2(100, 20);
 		text.text = text_to_print;
 		text.fontSize = font_size;
 		text.font = font;

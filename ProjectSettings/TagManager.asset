@@ -20,6 +20,7 @@ TagManager:
   - yRotationPoint
   - zRotationPoint
   - name
+  - projectName
   layers:
   - Default
   - TransparentFX
